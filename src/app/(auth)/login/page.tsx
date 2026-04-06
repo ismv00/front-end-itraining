@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "../../lib/api";
+import { api } from "@/lib/api";
 import Cookies from "js-cookie";
 import type {
   Role,
   LoginPayload,
   RegisterPayload,
   ApiError,
-} from "../../types/auth";
+} from "@/types/auth";
 
 export default function LoginPage() {
   const router = useRouter();
