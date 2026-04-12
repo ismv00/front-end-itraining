@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
 import { ApiError } from "@/types/auth";
 
+import { useRouter } from "next/navigation";
+
 interface StudentLink {
   id: string;
   status: string;
@@ -17,6 +19,7 @@ interface StudentLink {
 }
 
 export default function StudentsPage() {
+  const router = useRouter();
   const [students, setStudents] = useState<StudentLink[]>([]);
   const [filtered, setFiltered] = useState<StudentLink[]>([]);
   const [search, setSearch] = useState("");
@@ -149,6 +152,9 @@ export default function StudentsPage() {
               {filtered.map((s) => (
                 <tr
                   key={s.id}
+                  onClick={() =>
+                    router.push(`/dashboard/students/${s.student.id}`)
+                  }
                   className="hover:bg-white/[0.02] transition-colors cursor-pointer"
                 >
                   <td className="px-4 py-3.5 border-b border-white/5">

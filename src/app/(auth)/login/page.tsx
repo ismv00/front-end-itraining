@@ -14,7 +14,6 @@ import type {
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState<"login" | "register">("login");
-  const [role, setRole] = useState<Role>("PERSONAL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -52,7 +51,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await api.post("/auth/register", { ...registerData, role });
+      await api.post("/auth/register", { ...registerData, role: "PERSONAL" });
       setSuccess("Conta criada com sucesso! Faça login para continuar.");
       setTab("login");
       setError("");
@@ -192,28 +191,8 @@ export default function LoginPage() {
                   Criar conta
                 </h2>
                 <p className="text-sm text-white/30 mt-1">
-                  Escolha como quer usar o iTraining
+                  Crie sua conta como personal trainer
                 </p>
-              </div>
-
-              <div className="flex gap-2">
-                {(["PERSONAL", "STUDENT"] as Role[]).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => {
-                      setRole(r);
-                      setRegisterData({ ...registerData, role: r });
-                    }}
-                    className={`flex-1 py-2.5 rounded-lg text-sm transition-all border ${
-                      role === r
-                        ? "border-[#C8F04C]/60 text-[#C8F04C] bg-[#C8F04C]/5"
-                        : "border-white/5 text-white/30 hover:text-white/50"
-                    }`}
-                  >
-                    {r === "PERSONAL" ? "Sou personal" : "Sou aluno"}
-                  </button>
-                ))}
               </div>
 
               <Field label="Nome completo">
