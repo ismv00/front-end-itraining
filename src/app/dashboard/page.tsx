@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { api } from "../../lib/api";
 import { Sidebar } from "../../components/Sidebar";
 
+interface Me {
+  userId: string;
+  role: string;
+  name?: string;
+}
+
 interface Student {
   id: string;
   studentId: string;
@@ -33,6 +39,7 @@ interface Workout {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [me, setMe] = useState<Me | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [pendingLinks, setPendingLinks] = useState<Link[]>([]);
@@ -41,14 +48,16 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [studentsRes, workoutsRes, linksRes] = await Promise.all([
+        const [studentsRes, workoutsRes, linksRes, meRes] = await Promise.all([
           api.get("/students"),
           api.get("/workouts"),
           api.get("/links/personal/pending"),
+          api.get("/users/me"),
         ]);
         setStudents(studentsRes.data);
         setWorkouts(workoutsRes.data);
         setPendingLinks(linksRes.data);
+        setMe(meRes.data);
       } catch {
         router.push("/login");
       } finally {
@@ -84,7 +93,11 @@ export default function DashboardPage() {
         {/* top bar */}
         <div className="mb-8">
           <h1 className="font-syne font-bold text-2xl text-white">
-            Olá, <span className="text-[#C8F04C]">Personal</span> 👋
+            Olá,{" "}
+            <span className="text-[#C8F04C]">
+              {me?.name?.split(" ")[0] ?? "Personal"}
+            </span>{" "}
+            👋
           </h1>
           <p className="text-xs text-white/25 mt-1 capitalize">{today}</p>
         </div>
