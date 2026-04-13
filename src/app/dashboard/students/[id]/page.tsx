@@ -188,6 +188,20 @@ export default function StudentDetailPage() {
     );
   }
 
+  async function handleUnlink() {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja desvincular este aluno?",
+    );
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/links/${studentLink?.id}`);
+      router.push("/dashboard/students");
+    } catch {
+      alert("Erro ao desvincular aluno.");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0e0e0e] flex">
       <Sidebar />
@@ -229,15 +243,23 @@ export default function StudentDetailPage() {
               </span>
             </div>
           </div>
-          <button
-            onClick={() => {
-              setWorkoutModalOpen(true);
-              setError("");
-            }}
-            className="bg-[#C8F04C] text-[#0e0e0e] font-syne font-semibold text-sm px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-          >
-            + Criar treino
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleUnlink}
+              className="border border-red-400/20 text-red-400/50 hover:text-red-400 hover:border-red-400/40 font-syne font-semibold text-sm px-5 py-2.5 rounded-lg transition-all"
+            >
+              Desvincular
+            </button>
+            <button
+              onClick={() => {
+                setWorkoutModalOpen(true);
+                setError("");
+              }}
+              className="bg-[#C8F04C] text-[#0e0e0e] font-syne font-semibold text-sm px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              + Criar treino
+            </button>
+          </div>
         </div>
 
         {/* stats */}

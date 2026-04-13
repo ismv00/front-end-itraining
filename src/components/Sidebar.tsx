@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
+import { api } from "@/lib/api";
 
 const navItems = [
   {
@@ -67,6 +68,21 @@ export function Sidebar() {
     router.push("/login");
   }
 
+  async function handleDeleteAccount() {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir sua conta? Essa ação é irreversível.",
+    );
+    if (!confirmed) return;
+
+    try {
+      await api.delete("/users/me");
+      Cookies.remove("token");
+      router.push("/login");
+    } catch {
+      alert("Erro ao excluir conta.");
+    }
+  }
+
   return (
     <aside className="w-[220px] bg-[#111] border-r border-white/5 flex flex-col py-8 shrink-0">
       <span className="font-syne font-extrabold text-lg text-white px-6 mb-8">
@@ -91,6 +107,23 @@ export function Sidebar() {
             </button>
           );
         })}
+
+        <button
+          onClick={handleDeleteAccount}
+          className="flex items-center gap-3 px-6 py-2.5 text-sm text-red-400/50 border-l-2 border-transparent hover:text-red-400 transition-all"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9a1 1 0 001 1h6a1 1 0 001-1l1-9" />
+          </svg>
+          Excluir conta
+        </button>
 
         <button
           onClick={handleLogout}

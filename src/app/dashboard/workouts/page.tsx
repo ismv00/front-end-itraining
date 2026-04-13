@@ -143,6 +143,20 @@ export default function WorkoutsPage() {
     }
   }
 
+  async function handleDeleteWorkout(workoutId: string) {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir este treino?",
+    );
+    if (!confirmed) return;
+    try {
+      await api.delete(`/workouts/${workoutId}`);
+      fetchData();
+      setSelectedWorkout(null);
+    } catch {
+      alert("Erro ao excluir treino.");
+    }
+  }
+
   function getInitials(name: string) {
     return name
       .split(" ")
@@ -157,7 +171,6 @@ export default function WorkoutsPage() {
       <Sidebar />
 
       <main className="flex-1 p-10 relative">
-        {/* top bar */}
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className="font-syne font-bold text-2xl text-white">Treinos</h1>
@@ -176,7 +189,6 @@ export default function WorkoutsPage() {
           </button>
         </div>
 
-        {/* search */}
         <input
           type="text"
           placeholder="Buscar por título ou aluno..."
@@ -185,7 +197,6 @@ export default function WorkoutsPage() {
           className="w-full bg-[#151515] border border-white/5 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none focus:border-[#C8F04C]/40 transition-colors mb-6"
         />
 
-        {/* cards */}
         {loading ? (
           <p className="text-sm text-white/20">Carregando...</p>
         ) : filtered.length === 0 ? (
@@ -204,9 +215,20 @@ export default function WorkoutsPage() {
                     : "border-white/5"
                 }`}
               >
-                <h3 className="font-syne font-bold text-sm text-white mb-1">
-                  {workout.title}
-                </h3>
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-syne font-bold text-sm text-white">
+                    {workout.title}
+                  </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteWorkout(workout.id);
+                    }}
+                    className="text-red-400/30 hover:text-red-400 transition-colors text-xs"
+                  >
+                    excluir
+                  </button>
+                </div>
                 {workout.description && (
                   <p className="text-xs text-white/30 mb-3 leading-relaxed line-clamp-2">
                     {workout.description}
@@ -227,7 +249,6 @@ export default function WorkoutsPage() {
           </div>
         )}
 
-        {/* detail panel */}
         {selectedWorkout && (
           <div className="absolute top-0 right-0 bottom-0 w-80 bg-[#111] border-l border-white/5 p-7 flex flex-col gap-4 overflow-y-auto">
             <div className="flex justify-between items-start">
@@ -311,7 +332,6 @@ export default function WorkoutsPage() {
         )}
       </main>
 
-      {/* modal criar treino */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#151515] border border-white/5 rounded-xl p-7 w-full max-w-sm mx-4">
@@ -321,7 +341,6 @@ export default function WorkoutsPage() {
             <p className="text-xs text-white/30 mb-6">
               Associe um treino a um aluno
             </p>
-
             <form
               onSubmit={handleCreateWorkout}
               className="flex flex-col gap-4"
@@ -339,7 +358,6 @@ export default function WorkoutsPage() {
                   className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20"
                 />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-white/30 uppercase tracking-wider">
                   Descrição
@@ -354,7 +372,6 @@ export default function WorkoutsPage() {
                   className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20 resize-none"
                 />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-white/30 uppercase tracking-wider">
                   Aluno
@@ -375,9 +392,7 @@ export default function WorkoutsPage() {
                   ))}
                 </select>
               </div>
-
               {error && <p className="text-sm text-red-400">{error}</p>}
-
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
@@ -399,7 +414,6 @@ export default function WorkoutsPage() {
         </div>
       )}
 
-      {/* modal adicionar exercício */}
       {exerciseModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#151515] border border-white/5 rounded-xl p-7 w-full max-w-sm mx-4">
@@ -409,7 +423,6 @@ export default function WorkoutsPage() {
             <p className="text-xs text-white/30 mb-6">
               Para: {selectedWorkout?.title}
             </p>
-
             <form
               onSubmit={handleCreateExercise}
               className="flex flex-col gap-4"
@@ -429,7 +442,6 @@ export default function WorkoutsPage() {
                   className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20"
                 />
               </div>
-
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: "Séries", key: "sets", placeholder: "4" },
@@ -458,11 +470,9 @@ export default function WorkoutsPage() {
                   </div>
                 ))}
               </div>
-
               {exerciseError && (
                 <p className="text-sm text-red-400">{exerciseError}</p>
               )}
-
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
