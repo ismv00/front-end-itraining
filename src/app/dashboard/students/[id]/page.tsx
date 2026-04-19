@@ -204,6 +204,19 @@ export default function StudentDetailPage() {
     }
   }
 
+  async function handleDeleteExercise(workoutId: string, exerciseId: string) {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir este exercício?",
+    );
+    if (!confirmed) return;
+    try {
+      await api.delete(`/workouts/${workoutId}/exercises/${exerciseId}`);
+      fetchExercises(workoutId);
+    } catch {
+      alert("Erro ao excluir exercício.");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0e0e0e] flex">
       <Sidebar />
@@ -369,9 +382,19 @@ export default function StudentDetailPage() {
                         {workout.exercises?.map((ex) => (
                           <div
                             key={ex.id}
-                            className="bg-[#1a1a1a] rounded-lg p-3 flex justify-between items-center"
+                            className="bg-[#1a1a1a] rounded-lg p-3"
                           >
-                            <p className="text-sm text-white/80">{ex.name}</p>
+                            <div className="flex justify-between items-start mb-2">
+                              <p className="text-sm text-white/80">{ex.name}</p>
+                              <button
+                                onClick={() =>
+                                  handleDeleteExercise(workout.id, ex.id)
+                                }
+                                className="text-red-400/30 hover:text-red-400 transition-colors text-xs"
+                              >
+                                excluir
+                              </button>
+                            </div>
                             <div className="flex gap-3">
                               <span className="text-xs text-white/30">
                                 <span className="text-[#C8F04C] font-semibold">
