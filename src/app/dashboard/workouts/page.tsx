@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
 import { ApiError } from "@/types/auth";
+import { muscleGroups, exercisesByMuscle } from "@/data/exercise";
 
 interface Student {
   id: string;
@@ -34,6 +35,7 @@ interface Workout {
 }
 
 export default function WorkoutsPage() {
+  const [selectedMuscle, setSelectedMuscle] = useState("");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [filtered, setFiltered] = useState<Workout[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -396,7 +398,10 @@ export default function WorkoutsPage() {
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={() => {
+                    setExerciseModalOpen(false);
+                    setSelectedMuscle("");
+                  }}
                   className="flex-1 py-2.5 bg-transparent border border-white/5 rounded-lg text-sm text-white/30 hover:text-white/50 transition-colors"
                 >
                   Cancelar
@@ -423,25 +428,75 @@ export default function WorkoutsPage() {
             <p className="text-xs text-white/30 mb-6">
               Para: {selectedWorkout?.title}
             </p>
+
             <form
               onSubmit={handleCreateExercise}
               className="flex flex-col gap-4"
             >
+              {/* seletor de grupo muscular */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-white/30 uppercase tracking-wider">
-                  Nome
+                  Grupo muscular
                 </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Supino Reto"
-                  value={exerciseForm.name}
-                  onChange={(e) =>
-                    setExerciseForm({ ...exerciseForm, name: e.target.value })
-                  }
-                  required
-                  className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20"
-                />
+                <select
+                  value={selectedMuscle}
+                  onChange={(e) => {
+                    setSelectedMuscle(e.target.value);
+                    setExerciseForm({ ...exerciseForm, name: "" });
+                  }}
+                  className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors"
+                >
+                  <option value="">Selecione um grupo</option>
+                  {muscleGroups.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* seletor de exercício */}
+              {selectedMuscle && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] text-white/30 uppercase tracking-wider">
+                    Exercício
+                  </label>
+                  <select
+                    value={exerciseForm.name}
+                    onChange={(e) =>
+                      setExerciseForm({ ...exerciseForm, name: e.target.value })
+                    }
+                    className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors"
+                    required
+                  >
+                    <option value="">Selecione um exercício</option>
+                    {exercisesByMuscle[selectedMuscle].map((ex) => (
+                      <option key={ex} value={ex}>
+                        {ex}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* ou digitar manualmente */}
+              {selectedMuscle && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] text-white/30 uppercase tracking-wider">
+                    Ou digite manualmente
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Supino Reto"
+                    value={exerciseForm.name}
+                    onChange={(e) =>
+                      setExerciseForm({ ...exerciseForm, name: e.target.value })
+                    }
+                    className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20"
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: "Séries", key: "sets", placeholder: "4" },
@@ -470,13 +525,18 @@ export default function WorkoutsPage() {
                   </div>
                 ))}
               </div>
+
               {exerciseError && (
                 <p className="text-sm text-red-400">{exerciseError}</p>
               )}
+
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
-                  onClick={() => setExerciseModalOpen(false)}
+                  onClick={() => {
+                    setExerciseModalOpen(false);
+                    setSelectedMuscle("");
+                  }}
                   className="flex-1 py-2.5 bg-transparent border border-white/5 rounded-lg text-sm text-white/30 hover:text-white/50 transition-colors"
                 >
                   Cancelar
