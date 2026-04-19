@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
 import { ApiError } from "@/types/auth";
-
-import { useRouter } from "next/navigation";
 
 interface StudentLink {
   id: string;
@@ -18,10 +17,21 @@ interface StudentLink {
   };
 }
 
+interface PendingLink {
+  id: string;
+  createdAt: string;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export default function StudentsPage() {
   const router = useRouter();
   const [students, setStudents] = useState<StudentLink[]>([]);
   const [filtered, setFiltered] = useState<StudentLink[]>([]);
+  const [pendingLinks, setPendingLinks] = useState<PendingLink[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,7 +41,7 @@ export default function StudentsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchStudents();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -45,11 +55,15 @@ export default function StudentsPage() {
     );
   }, [search, students]);
 
-  async function fetchStudents() {
+  async function fetchData() {
     try {
-      const { data } = await api.get("/students");
-      setStudents(data);
-      setFiltered(data);
+      const [studentsRes, pendingRes] = await Promise.all([
+        api.get("/students"),
+        api.get("/links/personal/pending"),
+      ]);
+      setStudents(studentsRes.data);
+      setFiltered(studentsRes.data);
+      setPendingLinks(pendingRes.data);
     } finally {
       setLoading(false);
     }
@@ -64,12 +78,34 @@ export default function StudentsPage() {
       setSuccess("Aluno cadastrado com sucesso!");
       setForm({ name: "", email: "", password: "" });
       setModalOpen(false);
-      fetchStudents();
+      fetchData();
     } catch (err: unknown) {
       const apiError = err as ApiError;
       setError(apiError.response?.data?.error || "Erro ao cadastrar aluno");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleApprove(linkId: string) {
+    try {
+      await api.patch(`/links/personal/${linkId}/approve`);
+      fetchData();
+    } catch {
+      alert("Erro ao aprovar vínculo.");
+    }
+  }
+
+  async function handleReject(linkId: string) {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja rejeitar esta solicitação?",
+    );
+    if (!confirmed) return;
+    try {
+      await api.patch(`/links/personal/${linkId}/reject`);
+      fetchData();
+    } catch {
+      alert("Erro ao rejeitar vínculo.");
     }
   }
 
@@ -95,7 +131,6 @@ export default function StudentsPage() {
       <Sidebar />
 
       <main className="flex-1 p-10">
-        {/* top bar */}
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className="font-syne font-bold text-2xl text-white">Alunos</h1>
@@ -116,6 +151,54 @@ export default function StudentsPage() {
         </div>
 
         {success && <p className="text-sm text-[#C8F04C] mb-4">{success}</p>}
+
+        {/* solicitações pendentes */}
+        {pendingLinks.length > 0 && (
+          <div className="mb-8">
+            <h2 className="font-syne font-bold text-sm text-white mb-3 flex items-center gap-2">
+              Solicitações pendentes
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400">
+                {pendingLinks.length}
+              </span>
+            </h2>
+            <div className="flex flex-col gap-2">
+              {pendingLinks.map((link) => (
+                <div
+                  key={link.id}
+                  className="bg-[#151515] border border-amber-400/10 rounded-xl px-4 py-3 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-amber-400/10 flex items-center justify-center text-[11px] font-bold text-amber-400 shrink-0">
+                      {getInitials(link.student.name)}
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/80">
+                        {link.student.name}
+                      </p>
+                      <p className="text-xs text-white/25">
+                        {link.student.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleReject(link.id)}
+                      className="px-3 py-1.5 text-xs border border-red-400/20 text-red-400/50 hover:text-red-400 hover:border-red-400/40 rounded-lg transition-all"
+                    >
+                      Rejeitar
+                    </button>
+                    <button
+                      onClick={() => handleApprove(link.id)}
+                      className="px-3 py-1.5 text-xs bg-[#C8F04C] text-[#0e0e0e] font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                    >
+                      Aprovar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* search */}
         <div className="mb-6">
@@ -203,7 +286,6 @@ export default function StudentsPage() {
             <p className="text-xs text-white/30 mb-6">
               O aluno receberá acesso à plataforma
             </p>
-
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               {[
                 {
@@ -241,9 +323,7 @@ export default function StudentsPage() {
                   />
                 </div>
               ))}
-
               {error && <p className="text-sm text-red-400">{error}</p>}
-
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
