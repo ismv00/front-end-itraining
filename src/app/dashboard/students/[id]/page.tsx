@@ -548,8 +548,8 @@ export default function StudentDetailPage() {
                   >
                     <option value="">Selecione um exercício</option>
                     {exercisesByMuscle[selectedMuscle].map((ex) => (
-                      <option key={ex} value={ex}>
-                        {ex}
+                      <option key={ex.apiName} value={ex.apiName}>
+                        {ex.label}
                       </option>
                     ))}
                   </select>

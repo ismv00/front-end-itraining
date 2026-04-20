@@ -134,6 +134,7 @@ export default function WorkoutsPage() {
       });
       setExerciseModalOpen(false);
       setExerciseForm({ name: "", sets: "", reps: "", weight: "" });
+      setSelectedMuscle("");
       fetchExercises(selectedWorkout.id);
     } catch (err: unknown) {
       const apiError = err as ApiError;
@@ -159,15 +160,6 @@ export default function WorkoutsPage() {
     }
   }
 
-  function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
-
   async function handleDeleteExercise(exerciseId: string) {
     const confirmed = window.confirm(
       "Tem certeza que deseja excluir este exercício?",
@@ -181,6 +173,15 @@ export default function WorkoutsPage() {
     } catch {
       alert("Erro ao excluir exercício.");
     }
+  }
+
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
   }
 
   return (
@@ -357,6 +358,7 @@ export default function WorkoutsPage() {
         )}
       </main>
 
+      {/* modal criar treino */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#151515] border border-white/5 rounded-xl p-7 w-full max-w-sm mx-4">
@@ -421,10 +423,7 @@ export default function WorkoutsPage() {
               <div className="flex gap-3 mt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setExerciseModalOpen(false);
-                    setSelectedMuscle("");
-                  }}
+                  onClick={() => setModalOpen(false)}
                   className="flex-1 py-2.5 bg-transparent border border-white/5 rounded-lg text-sm text-white/30 hover:text-white/50 transition-colors"
                 >
                   Cancelar
@@ -442,6 +441,7 @@ export default function WorkoutsPage() {
         </div>
       )}
 
+      {/* modal adicionar exercício */}
       {exerciseModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-[#151515] border border-white/5 rounded-xl p-7 w-full max-w-sm mx-4">
@@ -451,12 +451,10 @@ export default function WorkoutsPage() {
             <p className="text-xs text-white/30 mb-6">
               Para: {selectedWorkout?.title}
             </p>
-
             <form
               onSubmit={handleCreateExercise}
               className="flex flex-col gap-4"
             >
-              {/* seletor de grupo muscular */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] text-white/30 uppercase tracking-wider">
                   Grupo muscular
@@ -478,7 +476,6 @@ export default function WorkoutsPage() {
                 </select>
               </div>
 
-              {/* seletor de exercício */}
               {selectedMuscle && (
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] text-white/30 uppercase tracking-wider">
@@ -494,29 +491,11 @@ export default function WorkoutsPage() {
                   >
                     <option value="">Selecione um exercício</option>
                     {exercisesByMuscle[selectedMuscle].map((ex) => (
-                      <option key={ex} value={ex}>
-                        {ex}
+                      <option key={ex.apiName} value={ex.apiName}>
+                        {ex.label}
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
-
-              {/* ou digitar manualmente */}
-              {selectedMuscle && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] text-white/30 uppercase tracking-wider">
-                    Ou digite manualmente
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Supino Reto"
-                    value={exerciseForm.name}
-                    onChange={(e) =>
-                      setExerciseForm({ ...exerciseForm, name: e.target.value })
-                    }
-                    className="bg-white/5 border border-white/5 rounded-lg px-3.5 py-3 text-sm text-white outline-none focus:border-[#C8F04C]/50 transition-colors placeholder-white/20"
-                  />
                 </div>
               )}
 
